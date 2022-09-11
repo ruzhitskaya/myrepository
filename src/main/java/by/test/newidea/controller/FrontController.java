@@ -1,6 +1,7 @@
 package by.test.newidea.controller;
 
 import by.test.newidea.repository.UserRerository;
+import by.test.newidea.configuration.DatabaseProperties;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -31,8 +32,7 @@ public class FrontController extends HttpServlet {
             System.out.println("Forward will be done!");
             req.setAttribute("user","Slava");
 
-            UserRerository userRerository = new UserRerository();
-
+            UserRerository userRerository = new UserRerository(new DatabaseProperties());
             req.setAttribute("users", userRerository.findAll());
 
             dispatcher.forward(req, resp);

@@ -2,24 +2,30 @@ package by.test.newidea.repository;
 
 import by.test.newidea.domain.User;
 import by.test.newidea.exception.NoSuchEntityException;
-import by.test.newidea.util.DatabasePropertiesReader;
-import org.apache.commons.lang3.StringUtils;
+import by.test.newidea.configuration.DatabaseProperties;
+import lombok.AllArgsConstructor;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.*;
 
 import static by.test.newidea.repository.UserTableColumns.*;
-import static by.test.newidea.util.DatabasePropertiesReader.DATABASE_LOGIN;
-import static by.test.newidea.util.DatabasePropertiesReader.DATABASE_NAME;
-import static by.test.newidea.util.DatabasePropertiesReader.DATABASE_PASSWORD;
-import static by.test.newidea.util.DatabasePropertiesReader.DATABASE_PORT;
-import static by.test.newidea.util.DatabasePropertiesReader.DATABASE_URL;
-import static by.test.newidea.util.DatabasePropertiesReader.POSTRGES_DRIVER_NAME;
+import static by.test.newidea.util.UUIDGenerator.generateUUID;
+//import static by.test.newidea.util.DatabasePropertiesReader.DATABASE_LOGIN;
+//import static by.test.newidea.util.DatabasePropertiesReader.DATABASE_NAME;
+//import static by.test.newidea.util.DatabasePropertiesReader.DATABASE_PASSWORD;
+//import static by.test.newidea.util.DatabasePropertiesReader.DATABASE_PORT;
+//import static by.test.newidea.util.DatabasePropertiesReader.DATABASE_URL;
+//import static by.test.newidea.util.DatabasePropertiesReader.POSTRGES_DRIVER_NAME;
 
+@Repository
+//@Primary
+@AllArgsConstructor
 public class UserRerository implements UserRepositoryInterface {
 
-
-
+    private static final Logger log = Logger.getLogger(UserRerository.class);
+    private final DatabaseProperties databaseProperties;
 
     @Override
     public User findById(Long id) {
@@ -37,10 +43,9 @@ public class UserRerository implements UserRepositoryInterface {
             if (hasRow) {
                 return userRowMapping(rs);
             } else {
-                throw new NoSuchEntityException("Entity User with id " + id + " does not exist", 404);
-            }
+                throw new NoSuchEntityException("Entity User with id " + id + " does not exist", 404, generateUUID());            }
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            log.error("DB connection process issues", e);
             throw new RuntimeException("SQL Issues!");
         }
 
@@ -57,24 +62,21 @@ public class UserRerository implements UserRepositoryInterface {
     }
     private Connection getConnection() throws SQLException {
         try {
-            String driver = DatabasePropertiesReader.getProperty(POSTRGES_DRIVER_NAME);
+            String driver = databaseProperties.getDriverName();
 
             Class.forName(driver);
         } catch (ClassNotFoundException e) {
-            System.err.println("JDBC Driver Cannot be loaded!");
+            log.error("JDBC Driver Cannot be loaded!", e);
             throw new RuntimeException("JDBC Driver Cannot be loaded!");
         }
 
-        String url = DatabasePropertiesReader.getProperty(DATABASE_URL);
-        String port = DatabasePropertiesReader.getProperty(DATABASE_PORT);
-        String dbName = DatabasePropertiesReader.getProperty(DATABASE_NAME);
-        String login = DatabasePropertiesReader.getProperty(DATABASE_LOGIN);
-        String password = DatabasePropertiesReader.getProperty(DATABASE_PASSWORD);
+        String url = databaseProperties.getUrl();
+        String login = databaseProperties.getLogin();
+        String password = databaseProperties.getPassword();
 
-        String jdbcURL = StringUtils.join(url, port, dbName);
-
-        return DriverManager.getConnection(jdbcURL, login, password);
+        return DriverManager.getConnection(url, login, password);
     }
+
     private User userRowMapping(ResultSet rs) throws SQLException {
         User user = new User();
 
@@ -136,7 +138,7 @@ public class UserRerository implements UserRepositoryInterface {
 
             return findById(userLastInsertId);
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            log.error("DB connection process issues", e);
             throw new RuntimeException("SQL Issues!");
         }
     }
@@ -169,7 +171,7 @@ public class UserRerository implements UserRepositoryInterface {
 
             return findById(object.getId());
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            log.error("DB connection process issues", e);
             throw new RuntimeException("SQL Issues!");
         }
     }
@@ -191,7 +193,8 @@ public class UserRerository implements UserRepositoryInterface {
 
             return id;
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            log.error("DB connection process issues", e);
+ //           System.err.println(e.getMessage());
             throw new RuntimeException("SQL Issues!");
         }
     }
@@ -218,7 +221,8 @@ public class UserRerository implements UserRepositoryInterface {
 
             return result;
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+//            System.err.println(e.getMessage());
+            log.error("DB connection process issues", e);
             throw new RuntimeException("SQL Issues!");
         }
     }
@@ -242,7 +246,8 @@ public class UserRerository implements UserRepositoryInterface {
 
             return Collections.singletonMap("avg", functiionCall);
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            log.error("DB connection process issues", e);
+//            System.err.println(e.getMessage());
             throw new RuntimeException("SQL Issues!");
         }
     }
@@ -271,7 +276,8 @@ public class UserRerository implements UserRepositoryInterface {
             return resultsearch;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            log.error("DB connection process issues", e);
+//            System.err.println(e.getMessage());
             throw new RuntimeException("SQL Issues!");
         }
     }
@@ -302,7 +308,8 @@ public class UserRerository implements UserRepositoryInterface {
             return resultsearch;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            log.error("DB connection process issues", e);
+//            System.err.println(e.getMessage());
             throw new RuntimeException("SQL Issues!");
         }
     }
